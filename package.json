@@ -1,7 +1,7 @@
 {
   "name": "vera-engineering",
-  "version": "0.1.0",
-  "description": "Verification-driven engineering harness for coding agents",
+  "version": "0.2.0",
+  "description": "Reusable VERA verification-driven AI engineering harness",
   "type": "module",
   "bin": {
     "vera": "./bin/vera.js"
@@ -11,7 +11,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "check": "node --run test"
+    "check": "node --test"
   },
   "files": [
     "bin",
@@ -19,12 +19,7 @@
     "schemas",
     "docs",
     "README.md",
-    "examples/*/package.json",
-    "examples/*/package-lock.json",
-    "examples/*/angular.json",
-    "examples/*/tsconfig.json",
-    "examples/angular/src/**",
-    "examples/generic/*.js"
+    "LICENSE"
   ],
   "license": "MIT",
   "repository": {
