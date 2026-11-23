@@ -1,10 +1,21 @@
 import fs from 'node:fs';
 import {safe,json,hash,write} from './storage.js';
-import {adapters,instructions} from './adapters.js';
+import {providerFiles} from './adapters.js';
 import {playbooks} from './playbooks.js';
+
+function projectBrief(config) {
+  const p=config.project;
+  const bullets=items=>(items||[]).map(x=>'- '+x).join('\n')||'- Not specified';
+  return '# '+p.name+' — VERA project brief\n\n'
+    +'## Project goals\n'+bullets(p.goals)+'\n\n'
+    +'## Architecture / context\n'+(p.context||'To be documented')+'\n\n'
+    +'## Scope and boundaries\n'+(p.scope||'Preserve current behavior unless approved')+'\n\n'
+    +'## Constraints\n'+bullets(config.policies.constraints)+'\n\n'
+    +'## Acceptance standards\n'+bullets(p.acceptance)+'\n\n'
+    +'## Verification\n'+bullets(config.verification.map(g=>g.id+': '+g.command.join(' ')))+'\n';
+}
 export function plan(root,config) {
-  const outputs = {'vera.json':JSON.stringify(config,null,2)+'\n','.vera/playbooks.json':JSON.stringify(playbooks,null,2)+'\n'};
-  if (adapters[config.agent.provider]) outputs[adapters[config.agent.provider].file] = instructions(config);
+  const outputs = {'vera.json':JSON.stringify(config,null,2)+'\n','.vera/playbooks.json':JSON.stringify(playbooks,null,2)+'\n','.vera/project.md':projectBrief(config),...providerFiles(config)};
   const manifestPath = safe(root,'.vera/manifest.json');
   const manifest = fs.existsSync(manifestPath)?json(manifestPath):{};
   return Object.entries(outputs).map(([file,content])=>{
