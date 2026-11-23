@@ -9,8 +9,11 @@ export async function interview(root,initial,advanced=false){
   const rl=createInterface({input:process.stdin,output:process.stdout});
   const questions=[
     ['Project goals (comma separated)',()=>config.project.goals.join(', '),v=>config.project.goals=v.split(',').map(x=>x.trim())],
-    ['Project context and constraints',()=>config.project.context,v=>config.project.context=v],
-    ['Agent (copilot, junie, none)',()=>config.agent.provider,v=>config.agent.provider=v],
+    ['Project context / architecture',()=>config.project.context,v=>config.project.context=v],
+    ['Project scope and boundaries',()=>config.project.scope||'',v=>config.project.scope=v],
+    ['Non-negotiable constraints (comma separated)',()=>config.policies.constraints.join(', '),v=>config.policies.constraints=v.split(',').map(x=>x.trim()).filter(Boolean)],
+    ['Acceptance standards (comma separated)',()=> (config.project.acceptance||[]).join(', '),v=>config.project.acceptance=v.split(',').map(x=>x.trim()).filter(Boolean)],
+    ['Agent (copilot, junie, both, none)',()=>config.agent.provider,v=>config.agent.provider=v],
     ['Autonomy (conservative, balanced, advanced)',()=>config.agent.autonomy,v=>config.agent.autonomy=v]
   ];
   if(advanced) questions.push(
@@ -19,12 +22,12 @@ export async function interview(root,initial,advanced=false){
     ['Repair attempts (0–10)',()=>String(config.workflow.maxRepairAttempts),v=>config.workflow.maxRepairAttempts=Number(v)],
     ['Verification gates as JSON',()=>JSON.stringify(config.verification),v=>config.verification=JSON.parse(v)]
   );
-  let index=fs.existsSync(progress)?json(progress).index:0;
+  let index=fs.existsSync(progress)&&json(progress).advanced===advanced?json(progress).index:0;
   try{
     while(index<questions.length){
       const [label,current,set]=questions[index];
       const answer=await rl.question(label+' ['+current()+'] (back/save): ');
-      if(answer==='save'){write(progress,{config,index});return null;}
+      if(answer==='save'){write(progress,{config,index,advanced});return null;}
       if(answer==='back'){index=Math.max(0,index-1);continue;}
       if(answer.trim()) {const previous=structuredClone(config);try{set(answer);validateConfig(config);}catch(error){config=previous;console.error(error.message);continue;}}
       index++;

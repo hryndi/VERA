@@ -1,6 +1,6 @@
 # Architecture
 
-VERA uses a single distributable ES module package. JavaScript on a pinned Node baseline keeps installation free of compilation. JSON Schema validates the external configuration boundary. Modules isolate provider-specific instructions from the portable lifecycle.
+VERA uses a single distributable ES module package with a no-example distribution. JavaScript on a pinned Node baseline keeps installation free of compilation. JSON Schema validates the external configuration boundary. Modules isolate provider-specific instructions from the portable lifecycle.
 
 ```mermaid
 flowchart TD
@@ -20,7 +20,7 @@ Storage uses atomic file replacement and a workspace lock for cooperating CLI pr
 
 Eight playbooks cover features, debugging, refactoring, review, architecture, tests, regressions and integration. The portable orchestration handoff descriptor defines task identity, scope, dependencies, acceptance and evidence.
 
-Task progression starts at DRAFT and follows READY, IMPLEMENTING, VERIFYING and REVIEWING before DONE. Failures enter REPAIRING and eventually BLOCKED. Completion checks policy identity, source scope, dependencies, current evidence and approval of the verified source fingerprint.
+On `vera start`, VERA creates `.vera/ACTIVE_TASK.md` and a scoped task handoff. Provider adapters read the same project-neutral contract and only generate IDE integration; they do not invoke agents natively.\n\nTask progression starts at DRAFT and follows READY, IMPLEMENTING, VERIFYING and REVIEWING before DONE. Failures enter REPAIRING and eventually BLOCKED. Completion checks policy identity, source scope, dependencies, current evidence and approval of the verified source fingerprint.
 
 ## Roadmap
 
@@ -31,4 +31,4 @@ Task progression starts at DRAFT and follows READY, IMPLEMENTING, VERIFYING and 
 5. Add isolated agent scheduling through the handoff interface, cancellation, cost limits and structured result collection.
 6. Validate native provider automation only when documented APIs become available.
 
-Parallel scheduling is an optional future layer. Each cloud task already has an isolated checkout. Use the existing checkout unless the user requests a worktree.
+Parallel scheduling and isolated agent execution are optional future layers. For now, developers must choose an approved branch or workspace for their IDE agents; VERA does not automatically create an isolated checkout.

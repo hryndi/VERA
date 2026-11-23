@@ -7,7 +7,7 @@ Precedence is global defaults, repository configuration, then an explicitly sele
 ```json
 {
   "version": 1,
-  "project": {"name": "service", "goals": ["Reliable delivery"], "context": "Preserve public APIs"},
+  "project": {"name": "service", "goals": ["Reliable delivery"], "context": "Preserve public APIs", "scope": "Only approved modules", "acceptance": ["Existing behavior preserved", "Tests pass"],
   "agent": {"provider": "copilot", "autonomy": "balanced"},
   "workflow": {"maxRepairAttempts": 2},
   "verification": [
@@ -25,10 +25,10 @@ Commands are executable-and-argument arrays. Shell expansion and pipes are unava
 
 Discovered scripts always take precedence over preset suggestions. The preset API in `src/presets.js` allows additional deterministic recommendations without dynamic plugin loading. No commands are invented for missing tools.
 
-Autonomy settings are instructions for the provider. All presets retain explicit human approval requirements for destructive operations and deployment. VERA's local runner does not provide an OS sandbox.
+Choose `copilot`, `junie`, `both` or `none`. Copilot generates a custom agent and skill; Junie generates project guidelines. Autonomy settings are instructions for the provider. All presets retain explicit human approval requirements for destructive operations and deployment. VERA's local runner does not provide an OS sandbox.
 
 A task can receive dependencies, acceptance criteria and risk with `run --contract contract.json`. Dependencies must already be DONE. Protect verification files explicitly when a custom command reads additional scripts or fixtures. New quality gates require a reviewed task contract.
 
-Knowledge lives in `.vera/knowledge.md`, task working context in `.vera/tasks`, and temporary evidence in `.vera/evidence`. Store proposed policy or knowledge changes separately for human review. Keep stable knowledge in version control using your project's ignore rules. Evidence retention is capped at 50 records. Subprocess stdout and stderr are discarded to avoid retaining secrets. Environment variables supplied to subprocesses are restricted to basic execution settings. Commands requiring credentials need an external, reviewed execution wrapper.
+The generated project brief lives in `.vera/project.md`. Knowledge lives in `.vera/knowledge.md`, task handoffs in `.vera/handoffs`, active task pointer in `.vera/ACTIVE_TASK.md`, task working context in `.vera/tasks`, and temporary evidence in `.vera/evidence`. Store proposed policy or knowledge changes separately for human review. Keep stable knowledge in version control using your project's ignore rules. Evidence retention is capped at 50 records. Subprocess stdout and stderr are discarded to avoid retaining secrets. Environment variables supplied to subprocesses are restricted to basic execution settings. Commands requiring credentials need an external, reviewed execution wrapper.
 
 Never enter secrets in goals, task objectives, acceptance criteria or knowledge. These text fields are persisted verbatim.

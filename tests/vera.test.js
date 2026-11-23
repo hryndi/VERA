@@ -128,7 +128,7 @@ test('interview saves and resumes approved answers',async t=>{
   }
   await conversation([['Project goals','Maintain compatibility'],['Project context','save']]);
   assert.equal(JSON.parse(fs.readFileSync(path.join(root,'.vera-interview.json'))).config.project.goals[0],'Maintain compatibility');
-  await conversation([['Project context','Existing service'],['Agent (','junie'],['Autonomy (','conservative'],['Apply these changes?','yes']]);
+  await conversation([['Project context','Existing service'],['Project scope and boundaries','Only agreed modules'],['Non-negotiable constraints','No breaking changes'],['Acceptance standards','Build passes, Tests pass'],['Agent (','junie'],['Autonomy (','conservative'],['Apply these changes?','yes']]);
   const config=JSON.parse(fs.readFileSync(path.join(root,'vera.json')));
   assert.equal(config.agent.provider,'junie');
   assert.equal(config.project.goals[0],'Maintain compatibility');
@@ -150,4 +150,35 @@ test('project playbooks override bundled workflow context',async t=>{
   assert.equal(projectPlaybooks(root).custom.focus,'Review API compatibility');
   const task=createTask(root,recommend(discover(root)),'Review',{playbook:'custom'});
   assert.equal(task.playbook,'custom');
+});
+
+test('copilot and junie can be installed together without examples',t=>{
+  const root=fixture(t),config=recommend(discover(root));
+  config.agent.provider='both';
+  apply(root,plan(root,config));
+  for(const file of [
+    '.github/copilot-instructions.md','.github/agents/vera.agent.md',
+    '.github/skills/vera-workflow/SKILL.md','.junie/AGENTS.md','.vera/project.md'
+  ]) assert.ok(fs.existsSync(path.join(root,file)),file);
+  assert.match(fs.readFileSync(path.join(root,'.github/agents/vera.agent.md'),'utf8'),/name: vera/);
+  assert.match(fs.readFileSync(path.join(root,'.vera/project.md'),'utf8'),/Acceptance standards/);
+  assert.ok(!fs.existsSync(path.join(root,'examples')));
+});
+test('start creates an active IDE task with project-specific acceptance criteria',t=>{
+  const root=fixture(t),config=recommend(discover(root));
+  config.project.acceptance=['Preserve behavior','Build and tests pass'];
+  apply(root,plan(root,config));
+  const cmd=spawnSync(process.execPath,[cli,'start','Implement the proposed feature','--root',root],{encoding:'utf8'});
+  assert.equal(cmd.status,0,cmd.stdout+cmd.stderr);
+  const files=fs.readdirSync(path.join(root,'.vera/tasks')).filter(name=>name.endsWith('.json'));
+  assert.equal(files.length,1);
+  const task=JSON.parse(fs.readFileSync(path.join(root,'.vera/tasks',files[0]),'utf8'));
+  assert.deepEqual(task.acceptance,config.project.acceptance);
+  assert.match(fs.readFileSync(path.join(root,'.vera/ACTIVE_TASK.md'),'utf8'),/handoffs/);
+  assert.match(fs.readFileSync(path.join(root,'.vera/handoffs',task.id+'.md'),'utf8'),/Implement the proposed feature/);
+});
+test('v2 distribution manifest excludes application examples',()=>{
+  const pkg=JSON.parse(fs.readFileSync(path.resolve('package.json'),'utf8'));
+  assert.equal(pkg.version,'0.2.0');
+  assert.ok(!pkg.files.some(p=>p.includes('example')));
 });

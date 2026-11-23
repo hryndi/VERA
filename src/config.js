@@ -7,8 +7,8 @@ export const schema = {
   type:'object', additionalProperties:false, required:['version','project','agent','workflow','verification','policies'],
   properties:{
     version:{const:1},
-    project:{type:'object',additionalProperties:false,required:['name','goals','context'],properties:{name:{type:'string',minLength:1},goals:{type:'array',items:{type:'string'}},context:{type:'string'}}},
-    agent:{type:'object',additionalProperties:false,required:['provider','autonomy'],properties:{provider:{enum:['copilot','junie','none']},autonomy:{enum:['conservative','balanced','advanced']}}},
+    project:{type:'object',additionalProperties:false,required:['name','goals','context'],properties:{name:{type:'string',minLength:1},goals:{type:'array',items:{type:'string'}},context:{type:'string'},scope:{type:'string'},acceptance:{type:'array',items:{type:'string',minLength:1}}}},
+    agent:{type:'object',additionalProperties:false,required:['provider','autonomy'],properties:{provider:{enum:['copilot','junie','both','none']},autonomy:{enum:['conservative','balanced','advanced']}}},
     workflow:{type:'object',additionalProperties:false,required:['maxRepairAttempts'],properties:{maxRepairAttempts:{type:'integer',minimum:0,maximum:10}}},
     verification:{type:'array',items:{type:'object',additionalProperties:false,required:['id','command','cwd','timeout'],properties:{id:{type:'string',pattern:'^[a-zA-Z0-9_-]+$'},command:{type:'array',minItems:1,items:{type:'string',minLength:1}},cwd:{type:'string'},timeout:{type:'integer',minimum:100,maximum:3600000}}}},
     policies:{type:'object',additionalProperties:false,required:['allowed','protected','constraints'],properties:{allowed:{type:'array',minItems:1,items:{type:'string'}},protected:{type:'array',items:{type:'string'}},constraints:{type:'array',items:{type:'string'}}}}
@@ -36,7 +36,7 @@ export function load(root, workspace) {
   return validateConfig(config);
 }
 export function recommend(discovery) {
-  return validateConfig({version:1,project:{name:discovery.name,goals:['Reliable development'],context:''},
+  return validateConfig({version:1,project:{name:discovery.name,goals:['Ship safe, maintainable changes'],context:'',scope:'Preserve existing functionality unless explicitly approved',acceptance:['Changes meet the requested behavior','All configured verification gates pass','Developer reviews the current revision']},
     agent:{provider:discovery.instructions.some(p=>p.includes('junie'))?'junie':'copilot',autonomy:'balanced'},
     workflow:{maxRepairAttempts:2},verification:discovery.gates,
     policies:{allowed:['.'],protected:['.git','.env','vera.json','.vera',...discovery.verificationFiles],constraints:['Preserve existing functionality','Request approval for destructive operations, dependencies and deployment']}});

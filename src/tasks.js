@@ -20,7 +20,7 @@ export function createTask(root,config,objective,options={}) {
   if(options.risk && !['low','medium','high'].includes(options.risk)) throw Error('Invalid risk classification');
   const task={id:crypto.randomUUID(),objective,state:'DRAFT',context:config.project,scope:config.policies.allowed,
     constraints:config.policies.constraints,dependencies:options.dependencies||[],risk:options.risk||'medium',
-    acceptance:options.acceptance||['All configured checks pass and human review approves'],
+    acceptance:options.acceptance||config.project.acceptance||['All configured checks pass and human review approves'],
     approvalRequirements:['Human review','Explicit approval of high-risk operations'],
     recovery:{maxAttempts:config.workflow.maxRepairAttempts,attempts:0},completion:['Current checks PASS','Policy unchanged','Review approved'],
     policy:hash(JSON.stringify(config)),baseline:snapshot(root),playbook:book,history:[],review:null};
