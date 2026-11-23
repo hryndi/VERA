@@ -34,6 +34,16 @@
         },
         "context": {
           "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       }
     },
@@ -49,6 +59,7 @@
           "enum": [
             "copilot",
             "junie",
+            "both",
             "none"
           ]
         },
