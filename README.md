@@ -1,83 +1,125 @@
 # VERA
 
-**Verification-Driven Engineering & Reliable Agents** — a reusable engineering harness for existing repositories. VERA discovers project scripts, interviews the developer, writes portable project policy and coding-agent instructions, creates task contracts, runs reproducible checks, and records verification evidence.
+**VERA — Verification-Driven Engineering & Reliable Agents**
 
-> **Status: v0.1 foundation.** Copilot and Junie integrations generate instructions and task handoffs; VERA does **not** autonomously invoke those IDE agents yet. Verification, task records, and review controls are implemented locally, but protected CI and human review are needed for strong trust boundaries.
+A clean, reusable AI engineering harness for existing codebases. **No sample apps, placeholder projects, or example assets to delete.**
 
-Requires **Node.js 22.12+** and Git.
+VERA asks about your software's goals and constraints, discovers existing verification commands, installs IDE-specific agent instructions, and creates actionable task handoffs. You keep using your existing project and tools.
 
-## Quick start — use VERA in any existing repository
+> **v0.2 — harness-first release.** It generates Copilot/Junie instructions and prepares tasks for IDE agents. It does **not** silently run a coding agent, deploy code, or bypass human review.
 
-Install the CLI once from this GitHub repository (there is no npm registry release yet):
+## Clone → configure → work
 
-```sh
-npm install --global git+https://github.com/hryndi/VERA.git
-vera --help
-```
+Requires Node.js 22.12+ and Git.
 
-Then, in your **existing** application (not inside the VERA checkout):
-
-```sh
-cd path/to/your-existing-project
-vera init
-vera doctor
-vera run "Implement my next feature"
-```
-
-`vera init` detects the project and asks about goals, constraints, provider and autonomy. It **previews the proposed files before writing**. After `vera run`, open Copilot or Junie in your IDE and supply the task context printed by `vera context TASK_ID`. VERA does not change application code during initialization.
-
-**Windows PowerShell:** use the same commands; if PowerShell blocks npm's launcher, call `npm.cmd` instead. Git and Node must be on PATH. In corporate networks, configure npm's trusted registry and certificates normally; do not disable TLS verification.
-
-**Prefer a preview first?** Run `vera init --dry-run`. Need additional questions about boundaries and verification? Run `vera init --advanced`.
-
-## Clone-and-install alternative
-
-If you prefer to inspect VERA before installing, clone it once to a tools directory:
+### 1. Clone VERA once and install the CLI
 
 ```sh
 git clone https://github.com/hryndi/VERA.git
 cd VERA
-npm ci --ignore-scripts
-npm test
 npm install --global .
 ```
 
-Then go back to **any** application repository and run `vera init`. You don't need to copy VERA's source tree into each project.
+Install VERA **outside** your application repositories. You do not need to copy it into each project.
 
-A global installation can also be replaced by running `node /path/to/VERA/bin/vera.js` from a target project. A registry publication has **not** been performed.
-
-## Typical development loop
+### 2. Initialize any existing project
 
 ```sh
-vera run "Add keyboard-accessible theme switch"   # returns TASK_ID
-vera context TASK_ID                                # read / give context to the coding agent
-# Implement and review code changes in your IDE
-vera verify TASK_ID                                 # configured build/test/lint checks
-vera review TASK_ID --approve                       # human approval only
-vera complete TASK_ID                               # reruns checks and validates approval
+cd /path/to/your-existing-project
+vera init
+vera doctor
 ```
 
-Keep the returned task ID; replace `TASK_ID` literally in the example commands. A task cannot be completed on agent confidence alone. VERA's verification status can be PASS, FAIL, or UNKNOWN. Missing checks are **not** treated as passing.
+The guided interview covers project goals, current architecture, allowed scope, constraints, acceptance standards, AI provider, and autonomy. VERA discovers and proposes build/test/lint commands. It previews changes before creating files.
 
-The CLI never merges PRs, deploys, accesses secrets, or installs dependencies into the target project automatically.
-
-## Configuration & maintenance
+### 3. Start your first AI development task
 
 ```sh
-vera status              # inspect effective config and tasks
-vera configure           # re-open onboarding and amend config
-vera doctor              # validate gates and tools
-vera upgrade --dry-run    # preview managed-file updates
-vera checkpoint TASK_ID  # store tracked Git patch for manual recovery
+vera start "Implement the approved feature"
 ```
 
-The project gets `vera.json`, project knowledge and task records in `.vera/`, and a Copilot or Junie instruction file. Existing customized files are protected by conflict checks. VERA does **not** overwrite them silently.
+VERA creates a task contract at `.vera/ACTIVE_TASK.md` and a detailed handoff. Open Copilot or Junie in your IDE and tell it:
+
+> Implement the task described in .vera/ACTIVE_TASK.md following VERA.
+
+The agent reads the project contract, plans, and implements within the approved boundaries. You stay in control of acceptance and review.
+
+### 4. Verify and complete
+
+```sh
+vera verify TASK_ID
+vera review TASK_ID --approve
+vera complete TASK_ID
+```
+
+Only run the approval command yourself after inspecting the changes. Completion reruns configured checks; FAIL or UNKNOWN is never treated as success.
+
+## What gets installed?
+
+VERA only adds the **small integration layer** to your existing project:
+
+```text
+existing-project/
+├── (all original files untouched)
+├── vera.json
+├── .vera/
+│   ├── project.md
+│   ├── knowledge.md
+│   ├── playbooks.json
+│   ├── ACTIVE_TASK.md           # created by vera start
+│   ├── handoffs/
+│   ├── tasks/
+│   └── evidence/
+├── .github/
+│   ├── copilot-instructions.md
+│   ├── agents/vera.agent.md
+│   └── skills/vera-workflow/SKILL.md
+└── .junie/
+    └── AGENTS.md
+```
+
+Copilot and Junie adapter files are generated **only when selected**. You can select either one, both, or neither. Existing customized files are guarded by conflict detection; VERA does not silently replace them.
+
+No example application is installed in your project or stored in the VERA repository.
+
+## Daily use
+
+| Command | Purpose |
+|---|---|
+| `vera init` | Interview, discover project and configure VERA |
+| `vera init --advanced` | Set allowed/protected paths, retry limits and gates |
+| `vera init --dry-run` | Preview without writing |
+| `vera doctor` | Validate config and check tools |
+| `vera start "Task description"` | Generate persistent task and active IDE handoff |
+| `vera context TASK_ID` | View the task contract and playbook |
+| `vera verify TASK_ID` | Run existing build/test/lint checks |
+| `vera status` | Inspect task state |
+| `vera review TASK_ID --approve` | Record developer approval |
+| `vera complete TASK_ID` | Reverify approved source and finish |
+| `vera configure` | Reconfigure with onboarding interview |
+| `vera upgrade --dry-run` | Preview adapter upgrades |
+| `vera checkpoint TASK_ID` | Save a tracked Git patch for manual recovery |
+
+`vera run` is an alias for `vera start`. Custom acceptance criteria for one task can be supplied using `--contract PATH_TO_JSON`.
+
+**Windows:** if PowerShell execution policy blocks npm, use `npm.cmd install --global .`. Do not disable certificate verification to work around corporate package registry issues.
+
+## Reliability and security
+
+- Uses validated JSON configuration and repeatable project detection.
+- Runs verification commands as argument arrays, with bounded timeouts.
+- Produces PASS, FAIL, or UNKNOWN; no checks yields UNKNOWN.
+- Protects selected files and detects edits after verification.
+- Requires developer review and independently reruns checks before completion.
+- Preserves customized files during integration and upgrades.
+
+VERA's local process is not an OS sandbox. An agent with the same filesystem permissions can potentially tamper with local state. Use protected CI and real isolation for high-risk projects.
 
 ## Documentation
 
-[Getting started](docs/getting-started.md) · [Configuration](docs/configuration.md) · [Architecture](docs/architecture.md) · [Security](docs/security.md) · [Implementation evidence and limitations](docs/implementation-report.md) · [Troubleshooting](docs/troubleshooting.md)
+[Getting started](docs/getting-started.md) · [Architecture](docs/architecture.md) · [Configuration](docs/configuration.md) · [Security](docs/security.md) · [Troubleshooting](docs/troubleshooting.md) · [Implementation status](docs/implementation-report.md)
 
-## Contributing and testing this repo
+## Development
 
 ```sh
 npm ci --ignore-scripts
@@ -85,4 +127,4 @@ npm test
 npm pack --dry-run
 ```
 
-See the [security model](docs/security.md) before enabling broad agent autonomy. Running local scripts is not equivalent to an isolated sandbox.
+Repository contents: VERA CLI, source modules, configuration schema, regression tests and documentation. **No demos or example apps.**
