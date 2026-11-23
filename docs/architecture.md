@@ -31,4 +31,4 @@ On `vera start`, VERA creates `.vera/ACTIVE_TASK.md` and a scoped task handoff. 
 5. Add isolated agent scheduling through the handoff interface, cancellation, cost limits and structured result collection.
 6. Validate native provider automation only when documented APIs become available.
 
-Parallel scheduling is an optional future layer. Each cloud task already has an isolated checkout. Use the existing checkout unless the user requests a worktree.
+Parallel scheduling and isolated agent execution are optional future layers. For now, developers must choose an approved branch or workspace for their IDE agents; VERA does not automatically create an isolated checkout.
