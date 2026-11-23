@@ -12,6 +12,6 @@ A managed-file conflict displays prior and proposed contents. Preserve custom co
 
 An abandoned `.vera/lock` blocks mutations. Confirm no VERA process is active before removing that lock manually. A partially completed installation can be previewed and rerun. Files whose content matches the proposal are idempotent.
 
-Copilot uses `.github/copilot-instructions.md`. Junie uses `.junie/AGENTS.md`. Enable repository instructions in the IDE and inspect its loaded instruction context. VERA does not invoke IDE APIs or guarantee that a model follows instructions.
+Copilot uses `.github/copilot-instructions.md`, `.github/agents/vera.agent.md` and `.github/skills/vera-workflow/SKILL.md`. Junie uses `.junie/AGENTS.md`. Choose `both` to use both adapters. Enable repository instructions in the IDE and inspect its loaded instruction context. VERA does not invoke IDE APIs or guarantee that a model follows instructions.
 
-Windows execution of npm, pnpm and yarn may require invoking the package manager's JavaScript entry point through node when only command shims are installed. Native Windows and macOS execution needs CI confirmation.
+If `vera` is not found, run `npm install --global .` in your cloned VERA repository, or invoke `node /path/to/VERA/bin/vera.js`. Windows execution of npm, pnpm and yarn may require invoking the package manager's JavaScript entry point through node when only command shims are installed. Native Windows and macOS execution needs CI confirmation.
