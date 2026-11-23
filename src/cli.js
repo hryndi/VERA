@@ -11,6 +11,7 @@ import {interview,approve} from './onboarding.js';
 import {verify} from './verification.js';
 import {createTask,readTask,saveTask,transition,verifyTask,complete,checkpoint} from './tasks.js';
 import {projectPlaybooks} from './playbooks.js';
+import {writeHandoff} from './handoff.js';
 const output=value=>console.log(JSON.stringify(value,null,2));
 export async function main(args){
   const {positionals,values}=parseArgs({args,allowPositionals:true,options:{
@@ -20,7 +21,7 @@ export async function main(args){
   const [command,id,...rest]=positionals;
   const root=fs.realpathSync(values.root||process.cwd());
   if(!command||values.help){
-    console.log('VERA 0.1.0\nCommands: init, configure, doctor, status, verify [task-id], run <objective>, context <id>, review <id> --approve, complete <id>, checkpoint <id>, upgrade, remove\nOptions: --root PATH --yes --dry-run --advanced --config JSON --workspace PATH --playbook NAME\nrun prepares a manual agent handoff. review records a human approval. No native agent API is invoked.');
+    console.log('VERA 0.2.0\nCommands: init, configure, doctor, status, verify [task-id], start <objective>, run <objective>, context <id>, review <id> --approve, complete <id>, checkpoint <id>, upgrade, remove\nOptions: --root PATH --yes --dry-run --advanced --config JSON --workspace PATH --playbook NAME\nrun prepares a manual agent handoff. review records a human approval. No native agent API is invoked.');
     return;
   }
   if(['init','configure','upgrade'].includes(command)){
@@ -66,10 +67,12 @@ export async function main(args){
   }
   await locked(root,async()=>{
     if(command==='remove'){output(removal(root,Boolean(values.yes&&!values['dry-run'])));return;}
-    if(command==='run'){
+    if(command==='run'||command==='start'){
       const task=createTask(root,config,[id,...rest].filter(Boolean).join(' '),{...(values.contract?json(path.resolve(values.contract)):{}),playbook:values.playbook});
       transition(task,'READY');transition(task,'IMPLEMENTING');saveTask(root,task);
-      output(task);console.log('Open your coding agent and supply vera context '+task.id+'.');return;
+      const handoff=writeHandoff(root,task);
+      output({id:task.id,state:task.state,objective:task.objective,acceptance:task.acceptance,handoff});
+      console.log('Ready: ask your IDE agent to implement .vera/ACTIVE_TASK.md.');return;
     }
     if(command==='verify'){
       const result=id?await verifyTask(root,config,id):await verify(root,config);
